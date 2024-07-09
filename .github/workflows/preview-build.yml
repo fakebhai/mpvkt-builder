@@ -1,0 +1,97 @@
+name: Build Android APK
+run-name: Build Job
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: "Git repository URL"
+        required: true
+        default: "https://github.com/abdallahmehiz/mpvKt"
+      appName:
+        description: "New app name"
+        required: false
+      applicationId:
+        description: "New application ID"
+        required: false
+      jdkVersion:
+        description: "OpenJDK version to use: 8 / 11 / 17 etc."
+        required: false
+        default: "17"
+      taskName:
+        description: "build.gradle task name: assemble[Type]"
+        required: false
+        default: "assemblePreview"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # Android SDK is built-in in this image
+    steps:
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ github.event.inputs.jdkVersion }}
+
+      - name: Clone project
+        run: git clone ${{ github.event.inputs.repository }} workspace
+
+      - name: Change App Name
+        run: |
+          set -e
+          cd workspace
+          if [ -n "${{ github.event.inputs.appName }}" ]; then
+            sed -i 's|<string name="app_name">.*</string>|<string name="app_name">${{ github.event.inputs.appName }}</string>|' app/src/main/res/values/strings.xml
+          fi
+
+      - name: Change Application ID
+        run: |
+          set -e
+          cd workspace
+          if [ -n "${{ github.event.inputs.applicationId }}" ]; then
+            sed -i 's|applicationId = ".*"|applicationId = "${{ github.event.inputs.applicationId }}"|' app/build.gradle.kts
+          fi
+
+      - name: Build APK
+        working-directory: ./workspace
+        run: |
+          if [ ! -f "gradlew" ]; then gradle wrapper; fi
+          chmod +x gradlew
+          ./gradlew ${{ github.event.inputs.taskName }} --stacktrace
+
+      - name: Count commits
+        run: |
+          set -e
+          cd workspace
+          commit_count=$(git rev-list --count HEAD)
+          echo "COMMIT_COUNT=$commit_count" >> $GITHUB_ENV
+
+      - name: Upload APKs
+        run: |
+          set -e
+          cd workspace
+          apkTypes=("universal" "arm64-v8a" "armeabi-v7a" "x86" "x86_64")
+          for apkType in "${apkTypes[@]}"; do
+            apkPaths=(
+              "./app/build/outputs/apk/preview/app-$apkType-preview.apk"
+            )
+            for apkPath in "${apkPaths[@]}"; do
+              if [ -f "$apkPath" ]; then
+                apkName=$(basename "$apkPath" .apk)
+                echo "Uploading $apkName..."
+                echo "APK_PATH=$apkPath" >> $GITHUB_ENV
+                echo "APK_NAME=$apkName-r${{ env.COMMIT_COUNT }}" >> $GITHUB_ENV
+                echo "::endgroup::"
+                break
+              fi
+            done
+          done
+        shell: bash
+
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ env.APK_PATH }}
+          name: ${{ env.APK_NAME }}.apk
+          retention-days: 3
