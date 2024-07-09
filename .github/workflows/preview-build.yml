@@ -66,32 +66,37 @@ jobs:
           commit_count=$(git rev-list --count HEAD)
           echo "COMMIT_COUNT=$commit_count" >> $GITHUB_ENV
 
-      - name: Upload APKs
-        run: |
-          set -e
-          cd workspace
-          apkTypes=("universal" "arm64-v8a" "armeabi-v7a" "x86" "x86_64")
-          for apkType in "${apkTypes[@]}"; do
-            apkPaths=(
-              "./app/build/outputs/apk/preview/app-$apkType-preview.apk"
-            )
-            for apkPath in "${apkPaths[@]}"; do
-              if [ -f "$apkPath" ]; then
-                apkName=$(basename "$apkPath" .apk)
-                echo "Uploading $apkName..."
-                echo "APK_PATH=$apkPath" >> $GITHUB_ENV
-                echo "APK_NAME=$apkName-r${{ env.COMMIT_COUNT }}" >> $GITHUB_ENV
-                echo "::endgroup::"
-                break
-              fi
-            done
-          done
-        shell: bash
-
-
-      - name: Upload APK
+      - name: Upload APK 1
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ env.APK_PATH }}
-          name: ${{ env.APK_NAME }}.apk
+          path: ./workspace/app/build/outputs/apk/preview/app-standard-universal-release.apk
+          name: app-standard-universal-${{ env.COMMIT_COUNT }}.apk
+          retention-days: 3
+
+      - name: Upload APK 2
+        uses: actions/upload-artifact@v4
+        with:
+          path: ./workspace/app/build/outputs/apk/preview/app-standard-arm64-v8a-release.apk
+          name: app-standard-arm64-v8a-r${{ env.COMMIT_COUNT }}.apk
+          retention-days: 3
+
+      - name: Upload APK 3
+        uses: actions/upload-artifact@v4
+        with:
+          path: ./workspace/app/build/outputs/apk/preview/app-standard-armeabi-v7a-release.apk
+          name: app-standard-armeabi-v7a-r${{ env.COMMIT_COUNT }}.apk
+          retention-days: 3
+
+      - name: Upload APK 4
+        uses: actions/upload-artifact@v4
+        with:
+          path: ./workspace/app/build/outputs/apk/preview/app-standard-x86-release.apk
+          name: app-standard-x86-r${{ env.COMMIT_COUNT }}.apk
+          retention-days: 3
+
+      - name: Upload APK 5
+        uses: actions/upload-artifact@v4
+        with:
+          path: ./workspace/app/build/outputs/apk/preview/app-standard-x86_64-release.apk
+          name: app-standard-x86_64-r${{ env.COMMIT_COUNT }}.apk
           retention-days: 3
