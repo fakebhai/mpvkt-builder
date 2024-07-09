@@ -69,34 +69,34 @@ jobs:
       - name: Upload APK 1
         uses: actions/upload-artifact@v4
         with:
-          path: ./workspace/app/build/outputs/apk/release/app-universal-release.apk
+          path: ./workspace/app/build/outputs/apk/release/app-universal-release-unsigned.apk
           name: app-standard-universal-${{ env.COMMIT_COUNT }}.apk
           retention-days: 3
 
       - name: Upload APK 2
         uses: actions/upload-artifact@v4
         with:
-          path: ./workspace/app/build/outputs/apk/release/app-arm64-v8a-release.apk
+          path: ./workspace/app/build/outputs/apk/release/app-arm64-v8a-release-unsigned.apk
           name: app-standard-arm64-v8a-r${{ env.COMMIT_COUNT }}.apk
           retention-days: 3
 
       - name: Upload APK 3
         uses: actions/upload-artifact@v4
         with:
-          path: ./workspace/app/build/outputs/apk/release/app-armeabi-v7a-release.apk
+          path: ./workspace/app/build/outputs/apk/release/app-armeabi-v7a-release-unsigned.apk
           name: app-standard-armeabi-v7a-r${{ env.COMMIT_COUNT }}.apk
           retention-days: 3
 
       - name: Upload APK 4
         uses: actions/upload-artifact@v4
         with:
-          path: ./workspace/app/build/outputs/apk/release/app-x86-release.apk
+          path: ./workspace/app/build/outputs/apk/release/app-x86-release-unsigned.apk
           name: app-standard-x86-r${{ env.COMMIT_COUNT }}.apk
           retention-days: 3
 
       - name: Upload APK 5
         uses: actions/upload-artifact@v4
         with:
-          path: ./workspace/app/build/outputs/apk/release/app-x86_64-release.apk
+          path: ./workspace/app/build/outputs/apk/release/app-x86_64-release-unsigned.apk
           name: app-standard-x86_64-r${{ env.COMMIT_COUNT }}.apk
           retention-days: 3
